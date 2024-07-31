@@ -11,6 +11,7 @@ const addPartyForm = document.querySelector('#addArtist');
 addPartyForm.addEventListener("submit",addParty);
 
 async function getAPIData(){
+    state.parties = [];
     const response = await fetch(API_URL);
     const {data} = await response.json();
     data.forEach((element) => {
@@ -25,16 +26,15 @@ async function render(){
 
 render();
 
-//getAPIData();
-
 async function renderParties(){
     console.log(partyList);
+    partyList.innerHTML = '';
     for(const index in state.parties){
         let div = document.createElement('div');
         div.setAttribute('class','subcontainer');
         let button = document.createElement('button');
         button.innerHTML = 'Delete My Party Here';
-        //button.addEventListener("submit",somethinghere);
+        button.addEventListener("click",()=> deleteParty(state.parties[index].id));
         let li = document.createElement('li');
         li.innerHTML = `
         <h2>Party Name: ${state.parties[index].name}</h2>
@@ -53,11 +53,11 @@ async function addParty(e){
     try{
         const response = await fetch(API_URL,{
             method: "POST",
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
-                id: 1,
                 name: addPartyForm.name.value,
                 description: addPartyForm.description.value,
-                date: addPartyForm.date.value,
+                date: new Date(addPartyForm.date.value),
                 location: addPartyForm.location.value,
             })
         })
@@ -71,6 +71,14 @@ async function addParty(e){
     }
 }
 
-async function deleteParty(e){
-    e.preventDefault();
+async function deleteParty(id){
+    try{
+        const response = await fetch(`${API_URL}/${id}`,{
+            method: "DELETE",
+        })
+        render()
+    }
+    catch(error){
+        console.log(error);
+    }
 }
